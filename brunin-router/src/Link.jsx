@@ -14,9 +14,10 @@ export function Link({ target, to, ...props }) {
       event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
     const isManageableEvent = target === undefined || target === '_self'
 
-    if (isMainEvent && isModifiedEvent && !isManageableEvent) {
+    if (isMainEvent && !isModifiedEvent && isManageableEvent) {
       event.preventDefault()
       navigate(to) // Navegacion con spa
+      window.scrollTo(0, 0)
     }
   }
 
