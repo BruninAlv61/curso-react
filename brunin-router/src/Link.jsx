@@ -1,3 +1,4 @@
+// Link.jsx
 import { EVENTS } from './consts.js'
 
 function navigate(href) {
