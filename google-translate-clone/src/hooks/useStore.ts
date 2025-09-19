@@ -42,7 +42,7 @@ export function reducer(state: State, action: Action) {
     return {
       ...state,
       loading: true,
-      fromtText: action.payload,
+      fromText: action.payload,
       result: ''
     }
   }
