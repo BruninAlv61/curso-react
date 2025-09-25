@@ -34,7 +34,7 @@ const initialState: UserWithId[] = [
 export const usersSlice = createSlice({
   name: 'users',
   initialState,
-  reducers: {}
+  reducers: { }
 })
 
 export default usersSlice.reducer

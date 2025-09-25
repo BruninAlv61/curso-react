@@ -11,11 +11,10 @@ import {
   Badge
 } from '@tremor/react'
 
-import { useSelector } from 'react-redux'
-import { type RootState } from '../store/index.ts'
+import { useAppSelector } from '../hooks/store.ts'
 
 export default function ListOfUsers() {
-  const users = useSelector((state: RootState) => state.users)
+  const users = useAppSelector((state) => state.users)
 
   return (
     <>
