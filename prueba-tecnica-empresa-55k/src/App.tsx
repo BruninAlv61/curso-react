@@ -1,13 +1,13 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import './App.css'
-import type { User } from './types.d'
+import { SortBy, type User } from './types.d'
 import { UsersList } from './components/UsersList'
 
 function App() {
   const [users, setUsers] = useState<User[]>([])
   const originalUsers = useRef<User[]>([]) // así si
   const [showColors, setShowColors] = useState(false)
-  const [sortByCountry, setSortByCountry] = useState(false)
+  const [sorting, setSorting] = useState<SortBy>(SortBy.NONE)
   const [filterCountry, setFilterCountry] = useState<string | null>(null)
 
   const handleReset = () => {
@@ -19,12 +19,17 @@ function App() {
   }
 
   const toggleSortByCountry = () => {
-    setSortByCountry((prevState) => !prevState)
+    const newSortingValue = sorting === SortBy.NONE ? SortBy.COUNTRY : SortBy.NONE
+    setSorting(newSortingValue)
   }
 
   const handleDelete = (email: string) => {
     const filteredUsers = users.filter((user) => user.email !== email)
     setUsers(filteredUsers)
+  }
+
+  const handleChangeSort = (sort: SortBy) => {
+    setSorting(sort)
   }
 
   useEffect(() => {
@@ -49,12 +54,21 @@ function App() {
 
     const sortedUsers = useMemo(()=> {
     console.log('Se están ordenando los usuarios con useMemo')
-    return sortByCountry
-      ? filteredUsers.toSorted(
-        (a, b) =>  a.location.country.localeCompare(b.location.country)
-      )
-      : filteredUsers
-    }, [filteredUsers, sortByCountry]) // <-- estas dependencias son los valores que
+    
+    if (sorting === SortBy.NONE) return filteredUsers
+    
+    const compareProperties: Record<string, (user: User) => any> = {
+      [SortBy.COUNTRY]: user => user.location.country,
+      [SortBy.NAME] : user => user.name.first,
+      [SortBy.LAST] : user => user.name.last
+    }
+
+    return filteredUsers.toSorted((a, b) => {
+      const extractPropierty = compareProperties[sorting]
+      return extractPropierty(a).localeCompare(extractPropierty(b))
+    })
+
+    }, [filteredUsers, sorting]) // <-- estas dependencias son los valores que
                                        // queremos que al cambiar vuelva a ejecutar el useMemo
 
   return (
@@ -63,7 +77,7 @@ function App() {
       <header>
         <button onClick={toggleColors}>Colorear filas</button>
         <button onClick={toggleSortByCountry}>
-          {sortByCountry ? 'No ordenar por país' : 'Ordernar por país'}
+          {sorting === SortBy.COUNTRY ? 'No ordenar por país' : 'Ordernar por país'}
         </button>
         <button onClick={handleReset}>Resetear estado</button>
         <input
@@ -76,6 +90,7 @@ function App() {
       </header>
       <main>
         <UsersList
+          changeSorting={handleChangeSort}
           deleteUser={handleDelete}
           showColors={showColors}
           users={sortedUsers}

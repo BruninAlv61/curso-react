@@ -95,6 +95,13 @@ export enum Title {
     Mrs = "Mrs",
 }
 
+export enum SortBy {
+    NONE = 'none',
+    NAME = 'name',
+    LAST = 'last',
+    COUNTRY = 'country'
+}
+
 export type Picture = {
     large:     string;
     medium:    string;
