@@ -5,10 +5,14 @@ import { UsersList } from './components/UsersList'
 
 function App() {
   const [users, setUsers] = useState<User[]>([])
-  const originalUsers = useRef<User[]>([]) // así si
   const [showColors, setShowColors] = useState(false)
   const [sorting, setSorting] = useState<SortBy>(SortBy.NONE)
   const [filterCountry, setFilterCountry] = useState<string | null>(null)
+  
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  
+  const originalUsers = useRef<User[]>([])
 
   const handleReset = () => {
     setUsers(originalUsers.current)
@@ -33,13 +37,24 @@ function App() {
   }
 
   useEffect(() => {
-    fetch('https://randomuser.me/api/?results=100')
-      .then((res) => res.json())
-      .then((res) => {
+    setLoading(true)
+    setError(null)
+    fetch('https://randomuser.me/api/?results=10')
+    .then((res) => {
+      if (!res.ok) throw new Error('Error en la petición')
+      return res.json()
+    })
+    .then((res) => {
         setUsers(res.results)
-        originalUsers.current = res.results //se modifica el current
+        originalUsers.current = res.results
       })
-      .catch((err) => console.error(err))
+      .catch((err) => {
+        setError(err)
+        console.error(err)
+      })
+      .finally(()=> {
+        setLoading(false)
+      })
   }, [])
 
   const filteredUsers = useMemo(() => {
@@ -89,12 +104,17 @@ function App() {
         />
       </header>
       <main>
+        {loading && <p>Cargando...</p>}
+        {!loading && error && <p>Ha habido un error</p>}
+        {!loading && !error && users.length === 0 && <p>No hay usuarios</p>}
+        {!loading && !error && users.length > 0 && 
         <UsersList
           changeSorting={handleChangeSort}
           deleteUser={handleDelete}
           showColors={showColors}
           users={sortedUsers}
-        />
+        />}
+        
       </main>
     </div>
   )
