@@ -2,40 +2,15 @@ import { useState, useMemo } from 'react'
 import './App.css'
 import { SortBy, type User } from './types.d'
 import { UsersList } from './components/UsersList'
-import { useInfiniteQuery } from '@tanstack/react-query'
-
-const fetchUsers = async (page: number) => {
-  return await fetch(`https://randomuser.me/api/?results=10&seed=brunodev&page=${page}`)
-    .then(res => {
-      if(!res.ok) throw new Error('Error en la petición')
-        return res.json()
-    })
-    .then(res => {
-      const nextCursor = Number(res.info.page)
-      return {
-        users: res.results,
-        nextCursor
-      }
-    })
-}
+import { useUsers } from './hooks/useUsers'
+import { Results } from './components/Results'
 
 function App() {
-const { isLoading, isError, data, refetch, fetchNextPage, hasNextPage } = useInfiniteQuery({
-  queryKey: ['users'],
-  queryFn: ({ pageParam = 1 }) => fetchUsers(pageParam),
-  getNextPageParam: (lastPage) => lastPage.nextCursor + 1,
-  initialPageParam: 1
-})
-
-  console.log(data)
+  const { isLoading, isError, users, refetch, fetchNextPage, hasNextPage } = useUsers()
 
   const [showColors, setShowColors] = useState(false)
   const [sorting, setSorting] = useState<SortBy>(SortBy.NONE)
   const [filterCountry, setFilterCountry] = useState<string | null>(null)
-
-  const [currentPage, setCurrentPage] = useState(1)
-
-  //const originalUsers = useRef<User[]>([])
 
   const handleReset = () => {
     refetch()
@@ -52,8 +27,7 @@ const { isLoading, isError, data, refetch, fetchNextPage, hasNextPage } = useInf
   }
 
   const handleDelete = (email: string) => {
-    const filteredUsers = users.filter((user) => user.email !== email)
-    //setUsers(filteredUsers)
+    users.filter((user) => user.email !== email)
   }
 
   const handleChangeSort = (sort: SortBy) => {
@@ -92,6 +66,7 @@ const { isLoading, isError, data, refetch, fetchNextPage, hasNextPage } = useInf
   return (
     <div className="App">
       <h1>Prueba técnica</h1>
+      <Results />
       <header>
         <button onClick={toggleColors}>Colorear filas</button>
         <button onClick={toggleSortByCountry}>
@@ -121,11 +96,14 @@ const { isLoading, isError, data, refetch, fetchNextPage, hasNextPage } = useInf
         {isError && <p>Ha habido un error</p>}
         {!isLoading && !isError && users.length === 0 && <p>No hay usuarios</p>}
 
-        {!isLoading && !isError && users.length > 0 && (
-          <button onClick={() => setCurrentPage(currentPage + 1)}>
-            Cargar más resultados
-          </button>
+        {!isLoading && !isError && hasNextPage && users.length > 0 && (
+          <button onClick={() => fetchNextPage()}>Cargar más resultados</button>
         )}
+
+        {!isLoading &&
+          !isError &&
+          hasNextPage === false &&
+          users.length > 0 && <p>No hay más resultados</p>}
       </main>
     </div>
   )
