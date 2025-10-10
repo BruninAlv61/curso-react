@@ -1,0 +1,17 @@
+main {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+
+  background-color: #202020;
+
+  h1 {
+    color: #ffffff
+  }
+
+  div {
+    display: grid;
+    place-items: center;
+  }
+}
